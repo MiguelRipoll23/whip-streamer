@@ -139,29 +139,31 @@ function App() {
         )}
 
         {/* Status Badge - Top Left */}
-        <div className="absolute top-4 left-4 pointer-events-none">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`${statusConfig.color} ${statusConfig.textColor} px-4 py-1.5 rounded-full font-mono text-base font-semibold tracking-wider flex items-center gap-2 backdrop-blur-sm`}
-          >
-            {statusConfig.showDot && (
-              <motion.div
-                key="pulse"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                transition={{ duration: 0.15 }}
-                className="w-2 h-2 bg-live-foreground rounded-full animate-pulse"
-              />
-            )}
-            {statusConfig.label}
-          </motion.div>
-        </div>
+        {hasPermission && (
+          <div className="absolute top-4 left-4 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`${statusConfig.color} ${statusConfig.textColor} px-4 py-1.5 rounded-full font-mono text-base font-semibold tracking-wider flex items-center gap-2 backdrop-blur-sm`}
+            >
+              {statusConfig.showDot && (
+                <motion.div
+                  key="pulse"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="w-2 h-2 bg-live-foreground rounded-full animate-pulse"
+                />
+              )}
+              {statusConfig.label}
+            </motion.div>
+          </div>
+        )}
 
         {/* Debug Overlay - Top Right */}
         <AnimatePresence>
-          {settings.showDebug && connectionState === 'connected' && (
+          {hasPermission && settings.showDebug && connectionState === 'connected' && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -175,21 +177,23 @@ function App() {
         </AnimatePresence>
 
         {/* Start/Stop Streaming Ring Button - Bottom Center */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto flex items-center justify-center">
-            <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleToggleStream}
-                className={`w-20 h-20 rounded-full border-[6px] backdrop-blur-sm flex items-center justify-center transition-colors ${
-                    isStreaming 
-                        ? 'border-red-500 bg-red-500/20' 
-                        : 'border-white/50 bg-black/20 hover:bg-black/30'
-                }`}
-            >
-                <div className={`w-14 h-14 rounded-full transition-all duration-300 ${
-                    isStreaming ? 'bg-red-500 rounded-lg scale-50' : 'bg-red-500' 
-                }`} />
-            </motion.button>
-        </div>
+        {hasPermission && (
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-auto flex items-center justify-center">
+              <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleToggleStream}
+                  className={`w-20 h-20 rounded-full border-[6px] backdrop-blur-sm flex items-center justify-center transition-colors ${
+                      isStreaming 
+                          ? 'border-red-500 bg-red-500/20' 
+                          : 'border-white/50 bg-black/20 hover:bg-black/30'
+                  }`}
+              >
+                  <div className={`w-14 h-14 rounded-full transition-all duration-300 ${
+                      isStreaming ? 'bg-red-500 rounded-lg scale-50' : 'bg-red-500' 
+                  }`} />
+              </motion.button>
+          </div>
+        )}
 
         {/* Settings Button - Bottom Left */}
         <AnimatePresence>
@@ -219,49 +223,51 @@ function App() {
         </AnimatePresence>
 
         {/* Controls Stack - Bottom Right */}
-        <div 
-          className="absolute bottom-8 right-8 pointer-events-auto flex flex-col gap-4"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Enable/Disable Camera */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleVideo}
-            className={`backdrop-blur-sm rounded-full p-3 flex items-center justify-center transition-colors ${
-                !isCameraEnabled ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/60 hover:bg-background/70 text-foreground'
-            }`}
+        {hasPermission && (
+          <div 
+            className="absolute bottom-8 right-8 pointer-events-auto flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
           >
-            {isCameraEnabled ? (
-                <VideoCamera className="h-6 w-6" weight="fill" />
-            ) : (
-                <VideoCameraSlash className="h-6 w-6" weight="fill" />
-            )}
-          </motion.button>
+            {/* Enable/Disable Camera */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleVideo}
+              className={`backdrop-blur-sm rounded-full p-3 flex items-center justify-center transition-colors ${
+                  !isCameraEnabled ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/60 hover:bg-background/70 text-foreground'
+              }`}
+            >
+              {isCameraEnabled ? (
+                  <VideoCamera className="h-6 w-6" weight="fill" />
+              ) : (
+                  <VideoCameraSlash className="h-6 w-6" weight="fill" />
+              )}
+            </motion.button>
 
-          {/* Flip Camera */}
-           <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleCamera}
-            className="bg-background/60 backdrop-blur-sm rounded-full p-3 flex items-center justify-center hover:bg-background/70 transition-colors"
-          >
-            <CameraRotate className="h-6 w-6 text-foreground" weight="bold" />
-          </motion.button>
+            {/* Flip Camera */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleCamera}
+              className="bg-background/60 backdrop-blur-sm rounded-full p-3 flex items-center justify-center hover:bg-background/70 transition-colors"
+            >
+              <CameraRotate className="h-6 w-6 text-foreground" weight="bold" />
+            </motion.button>
 
-          {/* Mute/Unmute Mic */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleMute}
-            className={`backdrop-blur-sm rounded-full p-3 flex items-center justify-center transition-colors ${
-                isMuted ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/60 hover:bg-background/70 text-foreground'
-            }`}
-          >
-            {isMuted ? (
-                <MicrophoneSlash className="h-6 w-6" weight="fill" />
-            ) : (
-                <Microphone className="h-6 w-6" weight="fill" />
-            )}
-          </motion.button>
-        </div>
+            {/* Mute/Unmute Mic */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleMute}
+              className={`backdrop-blur-sm rounded-full p-3 flex items-center justify-center transition-colors ${
+                  isMuted ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/60 hover:bg-background/70 text-foreground'
+              }`}
+            >
+              {isMuted ? (
+                  <MicrophoneSlash className="h-6 w-6" weight="fill" />
+              ) : (
+                  <Microphone className="h-6 w-6" weight="fill" />
+              )}
+            </motion.button>
+          </div>
+        )}
       </div>
     </div>
   );
