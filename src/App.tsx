@@ -9,7 +9,7 @@ import { Gear, CameraRotate, VideoCamera, VideoCameraSlash, Microphone, Micropho
 import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsSheet } from '@/components/SettingsSheet';
 import { DebugOverlay } from '@/components/DebugOverlay';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function App() {
   const [settings, setSettings] = useLocalStorage<StreamSettings>(STORAGE_KEY_SETTINGS, {
@@ -22,6 +22,50 @@ function App() {
   const [showInstruction, setShowInstruction] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isCameraEnabled, setIsCameraEnabled] = useState(true);
+
+  // PTT Logic
+  const wasMutedOnPress = useRef(false);
+  const pressStartTime = useRef(0);
+  const hasStartedPress = useRef(false);
+
+  const handleMicDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    hasStartedPress.current = true;
+    wasMutedOnPress.current = isMuted;
+    pressStartTime.current = Date.now();
+
+    if (isMuted) {
+      setIsMuted(false);
+    }
+  };
+
+  const handleMicUp = (e: React.PointerEvent) => {
+    if (!hasStartedPress.current) return;
+    e.preventDefault();
+    hasStartedPress.current = false;
+    
+    const duration = Date.now() - pressStartTime.current;
+    const isHold = duration > 200;
+
+    if (wasMutedOnPress.current) {
+      // Was muted
+      if (isHold) {
+        setIsMuted(true); // PTT finished
+      }
+      // Else: Toggle (stay unmuted)
+    } else {
+      // Was unmuted
+      setIsMuted(true); // Toggle to mute
+    }
+  };
+
+  const handleMicClick = (e: React.MouseEvent) => {
+    // Only handle click if it wasn't part of a press gesture
+    if (!hasStartedPress.current) {
+      e.preventDefault();
+      setIsMuted(!isMuted);
+    }
+  };
 
   const { mediaStream, videoRef, hasPermission, requestPermissions } = useMediaStream(facingMode);
   const audioLevel = useAudioLevel(mediaStream);
@@ -86,10 +130,6 @@ function App() {
 
   const toggleCamera = () => {
     setFacingMode(current => current === 'user' ? 'environment' : 'user');
-  };
-
-  const toggleMute = () => {
-    setIsMuted(prev => !prev);
   };
 
   const toggleVideo = () => {
@@ -255,7 +295,10 @@ function App() {
             {/* Mute/Unmute Mic */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={toggleMute}
+              onPointerDown={handleMicDown}
+              onPointerUp={handleMicUp}
+              onPointerLeave={handleMicUp}
+              onClick={handleMicClick}
               className={`backdrop-blur-sm rounded-full p-3 flex items-center justify-center transition-colors ${
                   isMuted ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/60 hover:bg-background/70 text-foreground'
               }`}
