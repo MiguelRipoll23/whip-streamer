@@ -26,11 +26,11 @@ function App() {
   // PTT Logic
   const wasMutedOnPress = useRef(false);
   const pressStartTime = useRef(0);
-  const hasStartedPress = useRef(false);
 
-  const handleMicDown = (e: React.PointerEvent) => {
-    e.preventDefault();
-    hasStartedPress.current = true;
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    
     wasMutedOnPress.current = isMuted;
     pressStartTime.current = Date.now();
 
@@ -39,31 +39,21 @@ function App() {
     }
   };
 
-  const handleMicUp = (e: React.PointerEvent) => {
-    if (!hasStartedPress.current) return;
-    e.preventDefault();
-    hasStartedPress.current = false;
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
     
     const duration = Date.now() - pressStartTime.current;
     const isHold = duration > 200;
 
     if (wasMutedOnPress.current) {
-      // Was muted
+      // Was muted → PTT mode if hold, Toggle mode if tap
       if (isHold) {
-        setIsMuted(true); // PTT finished
+        setIsMuted(true); // Long hold → mute again
       }
-      // Else: Toggle (stay unmuted)
+      // Short tap → keep mic enabled
     } else {
-      // Was unmuted
-      setIsMuted(true); // Toggle to mute
-    }
-  };
-
-  const handleMicClick = (e: React.MouseEvent) => {
-    // Only handle click if it wasn't part of a press gesture
-    if (!hasStartedPress.current) {
-      e.preventDefault();
-      setIsMuted(!isMuted);
+      // Was unmuted → always toggle to mute on release
+      setIsMuted(true);
     }
   };
 
@@ -295,10 +285,9 @@ function App() {
             {/* Mute/Unmute Mic */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onPointerDown={handleMicDown}
-              onPointerUp={handleMicUp}
-              onPointerLeave={handleMicUp}
-              onClick={handleMicClick}
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
               className={`backdrop-blur-sm rounded-full p-3 flex items-center justify-center transition-colors ${
                   isMuted ? 'bg-destructive/80 text-destructive-foreground' : 'bg-background/60 hover:bg-background/70 text-foreground'
               }`}
