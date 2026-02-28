@@ -5,21 +5,9 @@
   * {
     @apply border-border;
   }
-
-  html,
-  body,
-  #root {
-    min-height: 100%;
-  }
-
-  html,
-  body {
-    background-color: transparent;
-  }
   
   body {
     font-family: 'Space Grotesk', sans-serif;
-    margin: 0;
   }
   
   .font-mono {
