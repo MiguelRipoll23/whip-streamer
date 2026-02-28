@@ -142,9 +142,9 @@ function App() {
   const statusConfig = getStatusConfig();
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
+    <div className="min-h-[100svh] bg-black">
       <div 
-        className="relative w-full h-full touch-none select-none"
+        className="relative w-full min-h-[100svh] select-none"
       >
         {hasPermission ? (
           <video
