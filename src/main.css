@@ -180,12 +180,7 @@
     @apply border-border outline-ring/50;
   }
 
-  html,
   body {
-    background-color: transparent;
-  }
-
-  body {
-    @apply text-foreground;
+    @apply bg-background text-foreground;
   }
 }
