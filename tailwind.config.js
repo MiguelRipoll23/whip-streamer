@@ -1,10 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
 const defaultTheme = {
-  container: {
-    center: true,
-    padding: "2rem",
-  },
   extend: {
     screens: {
       coarse: { raw: "(pointer: coarse)" },
